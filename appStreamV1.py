@@ -6,11 +6,11 @@ import xlsxwriter
 from datetime import datetime
 import math
 
-# Define weights for categories
+# UPDATED 2026: Weights adjusted to reflect Seduca regulations 
+# (Ser/Decidir merged into 10% and Decidir removed as a standalone category)
 weights = {
     "Auto eval": 0.05,
-    "TO BE_SER": 0.05,
-    "TO DECIDE_DECIDIR": 0.05,
+    "TO BE_SER": 0.10,  # Changed from 0.05 to 0.10 for 2026
     "TO DO_HACER": 0.40,
     "TO KNOW_SABER": 0.45
 }
@@ -19,7 +19,6 @@ def custom_round(value):
     return math.floor(value + 0.5)
 
 def create_single_trimester_gradebook(df, trimester_to_keep):
-
     # Define the general columns to always keep
     general_columns = df.columns[:5].tolist()
     
@@ -69,10 +68,10 @@ def create_single_trimester_gradebook(df, trimester_to_keep):
 def process_data(df, teacher, subject, course, level, trimester_choice):
     
     # --- STEP 1: PRESERVE FINAL GRADE FROM ORIGINAL CSV ---
-    # We extract the final grade column immediately before any dropping happens
+    # UPDATED 2026: Target columns changed from 2025 to 2026
     final_grade_series = None
-    target_col = f"{trimester_choice} - 2025"
-    target_col_alt = f"{trimester_choice}- 2025" # Handle potential spacing differences
+    target_col = f"{trimester_choice} - 2026"
+    target_col_alt = f"{trimester_choice}- 2026" 
 
     if target_col in df.columns:
         final_grade_series = df[target_col].copy()
@@ -80,9 +79,10 @@ def process_data(df, teacher, subject, course, level, trimester_choice):
         final_grade_series = df[target_col_alt].copy()
     # ------------------------------------------------------
 
+    # UPDATED 2026: References updated to drop 2026 column headers
     columns_to_drop = [
         "Nombre de usuario", "Username", "Promedio General",
-        "Unique User ID", "2025", "Term3 - 2025"
+        "Unique User ID", "2026", "Term3 - 2026"
     ]
     df.drop(columns=columns_to_drop, inplace=True, errors='ignore')
 
@@ -136,15 +136,15 @@ def process_data(df, teacher, subject, course, level, trimester_choice):
         grp = sorted(groups[cat], key=lambda x: x['seq_num'])
         names = [d['new_name'] for d in grp]
         
-        # Use pre-calculated category score based on trimester choice
-        category_score_col = f"{trimester_choice} - 2025 - {cat} - Category Score"
+        # UPDATED 2026: Changed reference year for Category Score lookup
+        category_score_col = f"{trimester_choice} - 2026 - {cat} - Category Score"
         
         raw_avg = pd.Series(dtype='float64')
         if category_score_col in df.columns:
             raw_avg = pd.to_numeric(df[category_score_col], errors='coerce')
         else:
-            # Fallback for columns with no space
-            category_score_col_no_space = f"{trimester_choice}- 2025 - {cat} - Category Score"
+            # UPDATED 2026: Changed fallback reference year
+            category_score_col_no_space = f"{trimester_choice}- 2026 - {cat} - Category Score"
             if category_score_col_no_space in df.columns:
                 raw_avg = pd.to_numeric(df[category_score_col_no_space], errors='coerce')
             else:
